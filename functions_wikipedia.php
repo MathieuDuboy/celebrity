@@ -128,7 +128,7 @@ function get_datas_from_wiki($titre_page_wiki)
     $url_wikipedia   = "https://www.wikidata.org/w/api.php?action=wbgetentities&sites=enwiki&props=claims&ids=".$wikidata_item."&languages=fr&format=json";
     $htmlContent2    = file_get_contents($url_wikipedia);
     $obj2            = json_decode($htmlContent2, true);
-    //echo '<pre>'; print_r($obj2); echo '</pre>';
+    // echo '<pre>'; print_r($obj2); echo '</pre>';
     // Faites afficher la ligne du dessus pour visualiser les propriétés disponibles dans le tableau.
 
     $extract_contenu = $obj2['entities'][$wikidata_item]['claims'];
@@ -136,11 +136,25 @@ function get_datas_from_wiki($titre_page_wiki)
     // P856 = Site officiel
     if(isset($extract_contenu['P856'])) {
       $site_web = $extract_contenu['P856'][0]['mainsnak']['datavalue']['value'];
-      echo '<i class="tiny">Site Officiel de ' . $titre . '</i><a href="'.$site_web.'" rel="nofollow" target="_blank" class="tinytext" title="Site Officiel de ' . $titre . '"> <i class="fa fa-certificate"></i></a>';
+      echo '<i class="tiny">Site Officiel de ' . $titre . '</i><a href="'.$site_web.'" rel="nofollow" target="_blank" class="tinytext" title="Site Officiel de ' . $titre . '"> <i class="fa fa-certificate"></i></a><br />';
     }
 
-    // P101 = Activités annexes de l'artiste
-    // etc ... La liste est ici : https://www.wikidata.org/wiki/Wikidata:List_of_properties/fr
+    // Pour P2031 : Format de la date de ce type +2003-00-00T00:00:00Z
+    if(isset($extract_contenu['P2031'])) {
+      $date_actif = $extract_contenu['P2031'][0]['mainsnak']['datavalue']['value']['time'];
+      $tab_date = explode("+", $date_actif);
+      $date_uniquement = $tab_date[1];
+      $tab_date2 = explode("-", $date_uniquement);
+      $annee = $tab_date2[0];
+      echo '<i class="tiny">Actif depuis : '.$annee.'</i><br />';
+    }
+
+    // Pour P2048 la taille est en cm et contient un + devant ... Exemple : +159
+    if(isset($extract_contenu['P2048'])) {
+      $taille = $extract_contenu['P2048'][0]['mainsnak']['datavalue']['value']['amount'];
+      $taille = str_replace("+","",$taille);
+      echo '<i class="tiny">Taille de '.$titre.' : '.$taille.'cm</i><br />';
+    }
 
 }
 ?>
