@@ -9,8 +9,8 @@
 
     // Remplacer ici "Mylène_Farmer" par la variable contenant le titre de la page Wikipedia
     // Exemple : get_datas_from_wiki($titre_de_la_page_wikipedia);
-    // Andrew_Lincoln, Mylène_Farmer, Benoît_Poelvoorde, Yves_Rénier, Emma_Sjöberg, Barbara_Bain
-    get_datas_from_wiki("Andrew_Lincoln");
+    // Andrew_Lincoln, Mylène_Farmer, Benoît_Poelvoorde, Yves_Rénier, Emma_Sjöberg, Barbara_Bain, Amy_Winehouse
+    get_datas_from_wiki("Amy_Winehouse");
   ?>
   </body>
 </html>

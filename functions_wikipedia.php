@@ -24,11 +24,14 @@ function get_datas_from_wiki($titre_page_wiki)
     }
 
     // Extract de la page entière
-    $url_wikipedia   = "https://fr.wikipedia.org/w/api.php?action=query&prop=extracts&titles=" . $titre_page_wiki . "&inprop=url&format=json";
+    $url_wikipedia   = "https://fr.wikipedia.org/w/api.php?action=query&prop=extracts|pageprops&titles=" . $titre_page_wiki . "&inprop=url&format=json";
     $htmlContent2    = file_get_contents($url_wikipedia);
     $obj2            = json_decode($htmlContent2, true);
     $extract_contenu = $obj2['query']['pages'][$wikipedia_id]['extract'];
     $html2           = str_get_html($extract_contenu);
+
+    // Récupération du numero de recherche dans WIKIDATA ! (pour le bloc bleu de droite)
+    $wikidata_item = $obj2['query']['pages'][$wikipedia_id]['pageprops']['wikibase_item'];
 
     $enregistrement_h2         = 0;
     $nb_limite_paragraphes_bio = 0;
@@ -122,14 +125,22 @@ function get_datas_from_wiki($titre_page_wiki)
 
     // Ici on parse uniquement le bloc du côté droit
     // Recherche du site officiel via un parse du DOM (impossible de faire autrement à mon avis ...)
-    $url_wikipedia   = "https://fr.wikipedia.org/w/api.php?action=query&prop=revisions&rvprop=content&rvsection=0&rvparse=1&pageids=" . $wikipedia_id . "&inprop=url&format=json";
+    $url_wikipedia   = "https://www.wikidata.org/w/api.php?action=wbgetentities&sites=enwiki&props=claims&ids=".$wikidata_item."&languages=fr&format=json";
     $htmlContent2    = file_get_contents($url_wikipedia);
     $obj2            = json_decode($htmlContent2, true);
-    $extract_contenu = $obj2['query']['pages'][$wikipedia_id]['revisions'][0]['*'];
-    $html            = str_get_html($extract_contenu);
-    foreach ($html->find('span.url') as $element) {
-        echo '<i class="tiny">Site Officiel de ' . $titre . '</i><a href="//' . $element->plaintext . '" rel="nofollow" target="_blank" class="tinytext" title="Site Officiel de ' . $titre . '"> <i class="fa fa-certificate"></i></a>';
+    //echo '<pre>'; print_r($obj2); echo '</pre>';
+    // Faites afficher la ligne du dessus pour visualiser les propriétés disponibles dans le tableau.
+
+    $extract_contenu = $obj2['entities'][$wikidata_item]['claims'];
+    // Il suffit alors maintenant d'accéder aux n° de propriétés lorsqu'elle sont disponibles
+    // P856 = Site officiel
+    if(isset($extract_contenu['P856'])) {
+      $site_web = $extract_contenu['P856'][0]['mainsnak']['datavalue']['value'];
+      echo '<i class="tiny">Site Officiel de ' . $titre . '</i><a href="'.$site_web.'" rel="nofollow" target="_blank" class="tinytext" title="Site Officiel de ' . $titre . '"> <i class="fa fa-certificate"></i></a>';
     }
+
+    // P101 = Activités annexes de l'artiste
+    // etc ... La liste est ici : https://www.wikidata.org/wiki/Wikidata:List_of_properties/fr
 
 }
 ?>
